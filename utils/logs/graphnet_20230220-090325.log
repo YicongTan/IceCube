@@ -1,0 +1,2 @@
+[1;34mgraphnet[0m: [32mINFO    [0m 2023-02-20 09:03:25 - get_logger - Writing log to [1mlogs/graphnet_20230220-090325.log[0m
+[1;34mgraphnet[0m: [33mWARNING [0m 2023-02-20 09:03:25 - warn_once - `icecube` not available. Some functionality may be missing.[0m
