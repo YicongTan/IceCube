@@ -1,4 +1,0 @@
-[1;34mgraphnet[0m: [32mINFO    [0m 2023-02-21 08:34:23 - get_logger - Writing log to [1mlogs/graphnet_20230221-083423.log[0m
-[1;34mgraphnet[0m: [33mWARNING [0m 2023-02-21 08:34:24 - warn_once - `icecube` not available. Some functionality may be missing.[0m
-[1;34mgraphnet[0m: [32mINFO    [0m 2023-02-21 08:34:48 - main - features: ['x', 'y', 'z', 'time', 'charge', 'auxiliary'][0m
-[1;34mgraphnet[0m: [32mINFO    [0m 2023-02-21 08:34:49 - main - truth: ['zenith', 'azimuth'][0m

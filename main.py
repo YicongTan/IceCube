@@ -1,7 +1,6 @@
 from pytorch_lightning.callbacks import EarlyStopping
 from torch.optim.adam import Adam
 from graphnet.data.constants import FEATURES, TRUTH
-from graphnet.models import StandardModel
 from graphnet.models.detector.icecube import IceCubeKaggle
 from graphnet.models.gnn import DynEdge
 from graphnet.models.graph_builders import KNNGraphBuilder
@@ -13,13 +12,16 @@ from graphnet.training.utils import make_dataloader
 from graphnet.utilities.logging import get_logger
 from typing import Any, Dict, List, Optional
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
+from model.IceCubeModel import  IceCubeModel
 import pandas as pd
 import numpy as np
 import os
 
 logger = get_logger()
 
-def build_model(config: Dict[str, Any], train_dataloader: Any) -> StandardModel:
+def build_model(config: Dict[str, Any], train_dataloader: Any) -> IceCubeModel:
     """Builds GNN from config"""
     # Building model
     detector = IceCubeKaggle(
@@ -42,7 +44,7 @@ def build_model(config: Dict[str, Any], train_dataloader: Any) -> StandardModel:
                               config["target"] + "_kappa"]
         additional_attributes = ['zenith', 'azimuth', 'event_id']
 
-    model = StandardModel(
+    model = IceCubeModel(
         detector=detector,
         gnn=gnn,
         tasks=[task],
@@ -68,7 +70,7 @@ def build_model(config: Dict[str, Any], train_dataloader: Any) -> StandardModel:
 
 
 def load_pretrained_model(config: Dict[str, Any],
-                          state_dict_path: str = '/kaggle/input/dynedge-pretrained/dynedge_pretrained_batch_1_to_50/state_dict.pth') -> StandardModel:
+                          state_dict_path: str = '/kaggle/input/dynedge-pretrained/dynedge_pretrained_batch_1_to_50/state_dict.pth') -> IceCubeModel:
     train_dataloader, _ = make_dataloaders(config=config)
     model = build_model(config=config,
                         train_dataloader=train_dataloader)
@@ -136,13 +138,19 @@ def main(config):
             monitor="val_loss",
             patience=config["early_stopping_patience"],
         ),
+        ModelCheckpoint(monitor="val_loss"),
         ProgressBar(),
     ]
+
+    t_logger = TensorBoardLogger(
+        'tensorboard_logs',config['name'], default_hp_metric=False
+    )
 
     model.fit(
         train_dataloader,
         validate_dataloader,
-        callbacks=callbacks,
+        callbacks = callbacks,
+        logger = t_logger,
         **config["fit"],
     )
     # do inference
@@ -186,6 +194,7 @@ if __name__ == '__main__':
 
     # Configuration
     config = {
+        "name": 'IceCube_Default',
         "path": '/home/yicong/working/batch_1.db',
         "inference_database_path": '/home/yicong/working/batch_1.db',
         "pulsemap": 'pulse_table',
@@ -195,7 +204,7 @@ if __name__ == '__main__':
         "index_column": 'event_id',
         "run_name_tag": 'my_example',
         "batch_size": 200,
-        "num_workers": 2,
+        "num_workers": 24,
         "target": 'direction',
         "early_stopping_patience": 5,
         "fit": {
